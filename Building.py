@@ -24,7 +24,8 @@ class HippedRoof:
 
 
 class Building:
-    def __init__(self, building_name, roof_type, roof_slope, eave_height, parapet_height, parapet_enclosure):
+    def __init__(self, building_name, roof_type, roof_slope, eave_height, parapet_height, \
+                 parapet_enclosure):
         if roof_type == 'monoslope':
             MonoslopeRoof.__init__(self, roof_slope, eave_height, parapet_height, parapet_enclosure)
         elif roof_type == 'gabled':
