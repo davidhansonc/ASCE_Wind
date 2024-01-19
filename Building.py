@@ -4,6 +4,7 @@ class MonoslopeRoof:
         self.eave_height = eave_height
         self.parapet_height = parapet_height
         self.parapet_enclosure = parapet_enclosure
+        self.gust_effect_factor = 0.85
 
 
 class GabledRoof:
