@@ -1,7 +1,7 @@
 import pandas as pd
 from scipy.interpolate import interp1d
 
-class BuildingWindLoadsMFRS:
+class BuildingWindLoadsMWFRS:
     def __init__(self, exposure, height_above_ground, building_width, building_length, basic_wind_speed=105, flexible="no", enclosure="enclosed"):
         self.height_above_ground = height_above_ground #ft
         self.building_width = building_width #ft
@@ -65,6 +65,10 @@ class BuildingWindLoadsMFRS:
     def wind_directionality_factor(self):
         pass
 
+    
+    def enclosure_selection(self):
+        pass
+
 
     def wall_external_pressure_coefficient(self, L, B):
         # Wall pressure coefficients, Cp, for wall surfaces
@@ -112,9 +116,9 @@ class BuildingWindLoadsMFRS:
 
         return internal_pressure_coefficient
 
-    
-    def enclosure_selection(self):
-        pass
+
+    def wall_design_pressures(self):
+        p = q * G * Cp - q_i * GCpi
 
 
 mt_lemmon_cabin = BuildingWindLoadsMFRS(exposure='B', height_above_ground=27, building_length=36, \
