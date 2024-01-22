@@ -1,7 +1,7 @@
 import pandas as pd
 from scipy.interpolate import interp1d
 
-class WindPressureCalculator:
+class BuildingWindLoadsMFRS:
     def __init__(self, exposure, height_above_ground, building_width, building_length, basic_wind_speed=105, flexible="no", enclosure="enclosed"):
         self.height_above_ground = height_above_ground #ft
         self.building_width = building_width #ft
@@ -117,6 +117,7 @@ class WindPressureCalculator:
         pass
 
 
-mt_lemmon_cabin = WindPressureCalculator(exposure='B', height_above_ground=27, building_length=36, building_width=10)
+mt_lemmon_cabin = BuildingWindLoadsMFRS(exposure='B', height_above_ground=27, building_length=36, \
+                                        building_width=10)
 print(mt_lemmon_cabin.Kz)
 print(mt_lemmon_cabin.q)
