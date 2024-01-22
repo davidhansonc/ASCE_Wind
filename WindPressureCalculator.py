@@ -82,7 +82,7 @@ class WindPressureCalculator:
         # Create an interpolation function for L/B ratios between 1 and 4
         if 1 < L_B < 4:
             interpolation_func = interp1d(L_B_ratios, Cp_values, kind='linear')
-            Cp_leeward_wall = interpolation_func(L_B)
+            Cp_leeward_wall = float(interpolation_func(L_B))
         elif L_B <= 1:
             Cp_leeward_wall = -0.5
         elif L_B >= 4:
@@ -120,4 +120,3 @@ class WindPressureCalculator:
 mt_lemmon_cabin = WindPressureCalculator(exposure='B', height_above_ground=27, building_length=36, building_width=10)
 print(mt_lemmon_cabin.Kz)
 print(mt_lemmon_cabin.q)
-print(mt_lemmon_cabin.Cp_leeward)
