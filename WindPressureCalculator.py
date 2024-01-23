@@ -1,14 +1,15 @@
 import pandas as pd
 from scipy.interpolate import interp1d
+from create_report import ReportGenerator
 
 class WindPressureCalculator:
-    def __init__(self, exposure, height_above_ground, building_width, building_length, basic_wind_speed=105, flexible="no", enclosure="enclosed"):
-        self.height_above_ground = height_above_ground #ft
+    def __init__(self, exposure, eave_height, building_width, building_length, basic_wind_speed=105, flexible="no", enclosure="enclosed"):
+        self.eave_height = eave_height #ft
         self.building_width = building_width #ft
         self.building_length = building_length #ft
 
         self.exposure = exposure
-        self.Kz = self.velocity_pressure_coefficient(self.exposure, self.height_above_ground)
+        self.Kz = self.velocity_pressure_coefficient()
         self.Kzt = 1.0
         self.Kd = 0.85
         self.Ke = 1.0
@@ -22,6 +23,7 @@ class WindPressureCalculator:
             print("cannot calculate G for flexible buildings yet.")
         self.Cp_windward, self.Cp_leeward, self.sidewall = self.wall_external_pressure_coefficient(self.building_length, self.building_width)
         self.GCpi = self.internal_pressure_coefficient(enclosure)
+        self.p_net_windward, self.p_net_leeward, self.p_net_sidewall = self.calculate_net_wind_pressure()
 
 
     def calculate_velocity_pressure(self):
@@ -29,7 +31,7 @@ class WindPressureCalculator:
         return q
 
 
-    def velocity_pressure_coefficient(self, exposure, height_above_ground):
+    def velocity_pressure_coefficient(self):
         # Define the Kz values for different exposures and heights
         Kz_values = {
             'B': {0: 0.57, 15: 0.57, 20: 0.62, 25: 0.66, 30: 0.70, 40: 0.76, 50: 0.81, 60: 0.85, 70: 0.89, 80: 0.93, 90: 0.96, 100: 0.99, 120: 1.04, 140: 1.09, 160: 1.13, 180: 1.17, 200: 1.20, 250: 1.28, 300: 1.35, 350: 1.41, 400: 1.47, 450: 1.52, 500: 1.56},
@@ -38,14 +40,14 @@ class WindPressureCalculator:
         }
 
         # Extract the heights and corresponding Kz values for the given exposure
-        heights = list(Kz_values[exposure].keys())
-        Kz_vals = list(Kz_values[exposure].values())
+        heights = list(Kz_values[self.exposure].keys())
+        Kz_vals = list(Kz_values[self.exposure].values())
 
         # Create an interpolation function
         interpolation_func = interp1d(heights, Kz_vals, kind='linear')
 
-        # Use the interpolation function to find the Kz value for the given height_above_ground
-        self.Kz = interpolation_func(height_above_ground)
+        # Use the interpolation function to find the Kz value for the given eave_height
+        self.Kz = interpolation_func(self.eave_height)
 
         return self.Kz
 
@@ -115,7 +117,20 @@ class WindPressureCalculator:
     def enclosure_selection(self):
         pass
 
+    def calculate_net_wind_pressure(self):
+        # Calculate wind pressure for windward wall
+        p_windward = self.q * self.G * self.Cp_windward - self.q * self.GCpi
 
-mt_lemmon_cabin = WindPressureCalculator(exposure='B', height_above_ground=27, building_length=36, building_width=10)
-print(mt_lemmon_cabin.Kz)
-print(mt_lemmon_cabin.q)
+        # Calculate wind pressure for leeward wall
+        p_leeward = self.q * self.G * self.Cp_leeward - self.q * self.GCpi
+
+        # Calculate wind pressure for side wall
+        p_sidewall = self.q * self.G * self.sidewall - self.q * self.GCpi
+
+        return p_windward, p_leeward, p_sidewall
+
+
+# Usage
+calculator = WindPressureCalculator(exposure='B', eave_height=15, building_length=10, building_width=10)
+report_generator = ReportGenerator(calculator)
+report_generator.generate_report()
