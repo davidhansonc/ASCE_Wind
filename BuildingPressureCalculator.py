@@ -2,12 +2,14 @@ import pandas as pd
 from scipy.interpolate import interp1d
 from create_report import ReportGenerator
 
-class WindPressureCalculator:
+class BuildingPressureCalculator:
     def __init__(self, exposure, eave_height, building_width, building_length, basic_wind_speed=105, flexible="no", enclosure="enclosed"):
+        # Building Dimensions
         self.eave_height = eave_height #ft
         self.building_width = building_width #ft
         self.building_length = building_length #ft
 
+		# Velocity Pressure
         self.exposure = exposure
         self.Kz = self.velocity_pressure_coefficient()
         self.Kzt = 1.0
@@ -16,6 +18,7 @@ class WindPressureCalculator:
         self.V = basic_wind_speed #mph
         self.q = self.calculate_velocity_pressure()
 
+		# Pressure on Building
         self.flexible = flexible
         self.enclosure = enclosure
         self.G = 0.85
@@ -131,6 +134,6 @@ class WindPressureCalculator:
 
 
 # Usage
-calculator = WindPressureCalculator(exposure='B', eave_height=15, building_length=10, building_width=10)
+calculator = BuildingPressureCalculator(exposure='C', eave_height=15, building_length=10, building_width=10)
 report_generator = ReportGenerator(calculator)
 report_generator.generate_report()
