@@ -1,0 +1,2 @@
+class BuilidngEnclosureCalculator:
+	pass

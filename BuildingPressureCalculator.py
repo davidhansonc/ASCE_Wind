@@ -1,20 +1,22 @@
 import pandas as pd
+import numpy as np
 from scipy.interpolate import interp1d
 from create_report import ReportGenerator
 
 class BuildingPressureCalculator:
-    def __init__(self, exposure, eave_height, building_width, building_length, basic_wind_speed=105, flexible="no", enclosure="enclosed"):
+    def __init__(self, exposure, eave_height, building_width, building_length, basic_wind_speed=105, flexible="no", enclosure="enclosed", topographic_factor=1.0, ground_elevation=0):
         # Building Dimensions
         self.eave_height = eave_height #ft
         self.building_width = building_width #ft
         self.building_length = building_length #ft
+        self.z_g = ground_elevation #ft
 
 		# Velocity Pressure
         self.exposure = exposure
         self.Kz = self.velocity_pressure_coefficient()
-        self.Kzt = 1.0
-        self.Kd = 0.85
-        self.Ke = 1.0
+        self.Kzt = topographic_factor #modified by the TopographicCalculator class if needed.
+        self.Kd = 0.85 #this is fixed for any building structure
+        self.Ke = np.e**(-0.0000362 * self.z_g)
         self.V = basic_wind_speed #mph
         self.q = self.calculate_velocity_pressure()
 
@@ -34,6 +36,7 @@ class BuildingPressureCalculator:
         return q
 
 
+	# Need to update method for the equations in Table 26.10-1 footnotes rather than interpolating the table.
     def velocity_pressure_coefficient(self):
         # Define the Kz values for different exposures and heights
         Kz_values = {
@@ -53,22 +56,6 @@ class BuildingPressureCalculator:
         self.Kz = interpolation_func(self.eave_height)
 
         return self.Kz
-
-    
-    def wind_pressure_enclosed_part_enclosed(self):
-        pass
-
-
-    def topographic_factor(self):
-        pass
-
-
-    def ground_elevation_factor(self):
-        pass
-
-
-    def wind_directionality_factor(self):
-        pass
 
 
     def wall_external_pressure_coefficient(self, L, B):
@@ -116,9 +103,6 @@ class BuildingPressureCalculator:
         else:
             raise ValueError(f"Invalid enclosure type '{enclosure}'. Valid types are: {list(coefficients.keys())}")
 
-
-    def enclosure_selection(self):
-        pass
 
     def calculate_net_wind_pressure(self):
         # Calculate wind pressure for windward wall

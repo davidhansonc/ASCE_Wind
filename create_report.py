@@ -9,19 +9,25 @@ class ReportGenerator:
         self.template = self.env.get_template('report_template.tex')
 
     def prepare_data(self):
-        return {
+        # Prepare the data to be inserted into the LaTeX template
+        data = {
             'exposure': self.calculator.exposure,
             'eave_height': self.calculator.eave_height,
             'building_width': self.calculator.building_width,
             'building_length': self.calculator.building_length,
-            'basic_wind_speed': self.calculator.V,
+            'V': self.calculator.V,
+            'Kz': self.calculator.Kz,
+            'Kzt': self.calculator.Kzt,
+            'Kd': self.calculator.Kd,
+            'Ke': self.calculator.Ke,
+            'q': round(self.calculator.q, 2),
             'flexible': self.calculator.flexible,
             'enclosure': self.calculator.enclosure,
-            'Kz': self.calculator.Kz,
-            'p_net_windward': self.calculator.p_net_windward,
-            'p_net_leeward': self.calculator.p_net_leeward,
-            'p_net_sidewall': self.calculator.p_net_sidewall,
+            'p_net_windward': round(self.calculator.p_net_windward, 2),
+            'p_net_leeward': round(self.calculator.p_net_leeward, 2),
+            'p_net_sidewall': round(self.calculator.p_net_sidewall, 2),
         }
+        return data
 
     def render_template(self, data):
         return self.template.render(data)
