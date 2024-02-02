@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-from scipy.interpolate import interp1d
 from create_report import ReportGenerator
 
 class BuildingPressureCalculator:
@@ -13,12 +12,12 @@ class BuildingPressureCalculator:
 
 		# Velocity Pressure
         self.exposure = exposure
-        self.Kz = self.velocity_pressure_coefficient()
+        self.Kh = self.velocity_pressure_coefficient(self.eave_height)
         self.Kzt = topographic_factor #modified by the TopographicCalculator class if needed.
         self.Kd = 0.85 #this is fixed for any building structure
         self.Ke = np.e**(-0.0000362 * self.z_g)
         self.V = basic_wind_speed #mph
-        self.q = self.calculate_velocity_pressure()
+        self.q_h = self.calculate_velocity_pressure(self.Kh)
 
 		# Pressure on Building
         self.flexible = flexible
@@ -31,31 +30,32 @@ class BuildingPressureCalculator:
         self.p_net_windward, self.p_net_leeward, self.p_net_sidewall = self.calculate_net_wind_pressure()
 
 
-    def calculate_velocity_pressure(self):
-        q = 0.00256 * self.Kz * self.Kzt * self.Kd * self.Ke * self.V**2
+    def calculate_velocity_pressure(self, Kz):
+        q = 0.00256 * Kz * self.Kzt * self.Kd * self.Ke * self.V**2
         return q
 
 
 	# Need to update method for the equations in Table 26.10-1 footnotes rather than interpolating the table.
-    def velocity_pressure_coefficient(self):
-        # Define the Kz values for different exposures and heights
-        Kz_values = {
-            'B': {0: 0.57, 15: 0.57, 20: 0.62, 25: 0.66, 30: 0.70, 40: 0.76, 50: 0.81, 60: 0.85, 70: 0.89, 80: 0.93, 90: 0.96, 100: 0.99, 120: 1.04, 140: 1.09, 160: 1.13, 180: 1.17, 200: 1.20, 250: 1.28, 300: 1.35, 350: 1.41, 400: 1.47, 450: 1.52, 500: 1.56},
-            'C': {0: 0.85, 15: 0.85, 20: 0.90, 25: 0.94, 30: 0.98, 40: 1.04, 50: 1.09, 60: 1.13, 70: 1.17, 80: 1.21, 90: 1.24, 100: 1.26, 120: 1.31, 140: 1.36, 160: 1.39, 180: 1.43, 200: 1.46, 250: 1.53, 300: 1.59, 350: 1.64, 400: 1.69, 450: 1.73, 500: 1.77},
-            'D': {0: 1.03, 15: 1.03, 20: 1.08, 25: 1.12, 30: 1.16, 40: 1.22, 50: 1.27, 60: 1.31, 70: 1.34, 80: 1.38, 90: 1.40, 100: 1.43, 120: 1.48, 140: 1.52, 160: 1.55, 180: 1.58, 200: 1.61, 250: 1.68, 300: 1.73, 350: 1.78, 400: 1.82, 450: 1.86, 500: 1.89}
+    def velocity_pressure_coefficient(self, height):
+        z = height #ft
+        z_g = 0
+        α = 0
+        
+        exposure_to_params = {
+            "B": (7.0, 1200),
+            "C": (9.5, 900),
+            "D": (11.5, 700),
         }
+        
+        if self.exposure in exposure_to_params:
+            α, z_g = exposure_to_params[self.exposure]
+        else:
+            # If the exposure is not one of the expected values, raise an error
+            valid_exposures = ", ".join(exposure_to_params.keys())
+            raise ValueError(f"Unsupported exposure '{self.exposure}'. Valid exposures are: {valid_exposures}.")
 
-        # Extract the heights and corresponding Kz values for the given exposure
-        heights = list(Kz_values[self.exposure].keys())
-        Kz_vals = list(Kz_values[self.exposure].values())
-
-        # Create an interpolation function
-        interpolation_func = interp1d(heights, Kz_vals, kind='linear')
-
-        # Use the interpolation function to find the Kz value for the given eave_height
-        self.Kz = interpolation_func(self.eave_height)
-
-        return self.Kz
+        Kz = 2.01 * (z / z_g)**(2 / α)
+        return Kz
 
 
     def wall_external_pressure_coefficient(self, L, B):
@@ -106,13 +106,13 @@ class BuildingPressureCalculator:
 
     def calculate_net_wind_pressure(self):
         # Calculate wind pressure for windward wall
-        p_windward = self.q * self.G * self.Cp_windward - self.q * self.GCpi
+        p_windward = self.q_h * self.G * self.Cp_windward - self.q_h * self.GCpi
 
         # Calculate wind pressure for leeward wall
-        p_leeward = self.q * self.G * self.Cp_leeward - self.q * self.GCpi
+        p_leeward = self.q_h * self.G * self.Cp_leeward - self.q_h * self.GCpi
 
         # Calculate wind pressure for side wall
-        p_sidewall = self.q * self.G * self.sidewall - self.q * self.GCpi
+        p_sidewall = self.q_h * self.G * self.sidewall - self.q_h * self.GCpi
 
         return p_windward, p_leeward, p_sidewall
 
