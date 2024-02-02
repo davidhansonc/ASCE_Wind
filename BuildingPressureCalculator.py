@@ -115,9 +115,3 @@ class BuildingPressureCalculator:
         p_sidewall = self.q_h * self.G * self.sidewall - self.q_h * self.GCpi
 
         return p_windward, p_leeward, p_sidewall
-
-
-# Usage
-calculator = BuildingPressureCalculator(exposure='C', eave_height=15, building_length=10, building_width=10)
-report_generator = ReportGenerator(calculator)
-report_generator.generate_report()
