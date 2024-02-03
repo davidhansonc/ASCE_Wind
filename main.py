@@ -1,12 +1,24 @@
+from WindParameters import WindParameters
 from BuildingPressureCalculator import BuildingPressureCalculator
 from RoofPressureCalculator import RoofPressureCalculator
 
-calculator = BuildingPressureCalculator(exposure='C', eave_height=15, building_length=10, building_width=10)
+basic_wind_speed = 105
+exposure = "B"
+eave_height = 15
+ground_elevation = 0
+directionality_factor = 0.85
+topographic_factor = 1.0
 
-# Example instantiation and usage
-roof_calculator = RoofPressureCalculator(roof_slope=30, exposure='B', eave_height=10, building_width=20, building_length=30)
-print(roof_calculator.calculate_roof_load())
+wind_location = WindParameters(basic_wind_speed, exposure, eave_height)
 
+building_length = 10
+building_width = 8
+enclosure = "enclosed"
+flexible = "no"
 
-report_generator = ReportGenerator(calculator)
-report_generator.generate_report()
+building = BuildingPressureCalculator()
+
+roof_type = "monoslope"
+roof_slope = 4
+
+roof_calculator = RoofPressureCalculator(roof_type, roof_slope)

@@ -8,16 +8,6 @@ class BuildingPressureCalculator:
         self.eave_height = eave_height #ft
         self.building_width = building_width #ft
         self.building_length = building_length #ft
-        self.z_g = ground_elevation #ft
-
-		# Velocity Pressure
-        self.exposure = exposure
-        self.Kh = self.velocity_pressure_coefficient(self.eave_height)
-        self.Kzt = topographic_factor #modified by the TopographicCalculator class if needed.
-        self.Kd = 0.85 #this is fixed for any building structure
-        self.Ke = np.e**(-0.0000362 * self.z_g)
-        self.V = basic_wind_speed #mph
-        self.q_h = self.calculate_velocity_pressure(self.Kh)
 
 		# Pressure on Building
         self.flexible = flexible
@@ -35,7 +25,6 @@ class BuildingPressureCalculator:
         return q
 
 
-	# Need to update method for the equations in Table 26.10-1 footnotes rather than interpolating the table.
     def velocity_pressure_coefficient(self, height):
         z = height #ft
         z_g = 0
@@ -106,12 +95,12 @@ class BuildingPressureCalculator:
 
     def calculate_net_wind_pressure(self):
         # Calculate wind pressure for windward wall
-        p_windward = self.q_h * self.G * self.Cp_windward - self.q_h * self.GCpi
+        p_windward = self.q_z * self.G * self.Cp_windward - self.q_z * self.GCpi
 
         # Calculate wind pressure for leeward wall
-        p_leeward = self.q_h * self.G * self.Cp_leeward - self.q_h * self.GCpi
+        p_leeward = self.q_z * self.G * self.Cp_leeward - self.q_z * self.GCpi
 
         # Calculate wind pressure for side wall
-        p_sidewall = self.q_h * self.G * self.sidewall - self.q_h * self.GCpi
+        p_sidewall = self.q_z * self.G * self.sidewall - self.q_z * self.GCpi
 
         return p_windward, p_leeward, p_sidewall
