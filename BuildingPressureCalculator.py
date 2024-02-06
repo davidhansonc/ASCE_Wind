@@ -1,11 +1,13 @@
 import pandas as pd
 import numpy as np
+from scipy.interpolate import interp1d
 from create_report import ReportGenerator
 
 class BuildingPressureCalculator:
-    def __init__(self, exposure, eave_height, building_width, building_length, basic_wind_speed=105, flexible="no", enclosure="enclosed", topographic_factor=1.0, ground_elevation=0):
+    def __init__(self, velocity_pressure, eave_height, building_width, building_length, 
+                 flexible="no", enclosure="enclosed",):
         # Building Dimensions
-        self.eave_height = eave_height #ft
+        self.z = eave_height #ft
         self.building_width = building_width #ft
         self.building_length = building_length #ft
 
@@ -15,36 +17,11 @@ class BuildingPressureCalculator:
         self.G = 0.85
         if self.flexible == 'yes':
             print("cannot calculate G for flexible buildings yet.")
-        self.Cp_windward, self.Cp_leeward, self.sidewall = self.wall_external_pressure_coefficient(self.building_length, self.building_width)
+        self.q_z = velocity_pressure #psf
+        self.Cp_windward, self.Cp_leeward, self.sidewall = self.wall_external_pressure_coefficient(self.building_length, \
+                                                                                                   self.building_width)
         self.GCpi = self.internal_pressure_coefficient(enclosure)
         self.p_net_windward, self.p_net_leeward, self.p_net_sidewall = self.calculate_net_wind_pressure()
-
-
-    def calculate_velocity_pressure(self, Kz):
-        q = 0.00256 * Kz * self.Kzt * self.Kd * self.Ke * self.V**2
-        return q
-
-
-    def velocity_pressure_coefficient(self, height):
-        z = height #ft
-        z_g = 0
-        α = 0
-        
-        exposure_to_params = {
-            "B": (7.0, 1200),
-            "C": (9.5, 900),
-            "D": (11.5, 700),
-        }
-        
-        if self.exposure in exposure_to_params:
-            α, z_g = exposure_to_params[self.exposure]
-        else:
-            # If the exposure is not one of the expected values, raise an error
-            valid_exposures = ", ".join(exposure_to_params.keys())
-            raise ValueError(f"Unsupported exposure '{self.exposure}'. Valid exposures are: {valid_exposures}.")
-
-        Kz = 2.01 * (z / z_g)**(2 / α)
-        return Kz
 
 
     def wall_external_pressure_coefficient(self, L, B):

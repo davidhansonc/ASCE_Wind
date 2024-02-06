@@ -16,7 +16,8 @@ building_width = 8
 enclosure = "enclosed"
 flexible = "no"
 
-building = BuildingPressureCalculator()
+building = BuildingPressureCalculator(wind_location.q_z, wind_location.z, building_width, \
+									  building_length, flexible, enclosure)
 
 roof_type = "monoslope"
 roof_slope = 4
