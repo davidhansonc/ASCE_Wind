@@ -1,13 +1,12 @@
 import pandas as pd
 import numpy as np
 from scipy.interpolate import interp1d
-from create_report import ReportGenerator
 
 class BuildingPressureCalculator:
     def __init__(self, velocity_pressure, eave_height, building_width, building_length, 
                  flexible="no", enclosure="enclosed",):
         # Building Dimensions
-        self.z = eave_height #ft
+        self.h = eave_height #ft
         self.building_width = building_width #ft
         self.building_length = building_length #ft
 

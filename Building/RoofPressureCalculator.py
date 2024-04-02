@@ -1,4 +1,4 @@
-from BuildingPressureCalculator import BuildingPressureCalculator
+from Building.BuildingPressureCalculator import BuildingPressureCalculator
 
 class RoofPressureCalculator(BuildingPressureCalculator):
     def __init__(self, roof_slope, *args, **kwargs):
